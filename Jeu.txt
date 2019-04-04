@@ -1,0 +1,87 @@
+
+
+	
+void jouer(SDL_Surface* ecran)
+{
+	SDL_Surface *personnageActuel = NULL;	
+
+	personnage[BAS] = IMG_Load("personnage_bas.png");
+    	personnage[GAUCHE] = IMG_Load("personnage_gauche.png");
+    	personnage[HAUT] = IMG_Load("personnage_haut.png");
+    	personnage[DROITE] = IMG_Load("personnage_droite.png");
+
+    	personnageActuel = personnage[BAS];
+
+}
+
+					
+//
+
+bool CollisionPixelMasque(Image I,AABB box,int curseur_x,int curseur_y)
+{	
+	if (CollisionPixelAABB(box,curseur_x,curseur_y)==false)
+      		return false;
+	int xlocal = curseur_x - box.x;
+   	int ylocal = curseur_y - box.y;
+   	if (PixelMaskColor(I,box,xlocal,ylocal)==1)
+      		return true;
+   	else
+      		return false;
+}
+
+struct AABB
+{
+  int x;
+  int y;
+  int w;
+  int h;
+};
+
+bool CollisionPixelAABB(AABB box,int curseur_x,int curseur_y)
+{
+   if (curseur_x >= box.x 
+    && curseur_x < box.x + box.w
+    && curseur_y >= box.y 
+    && curseur_y < box.y + box.h)
+       return true;
+   else
+       return false;
+}
+
+//
+
+while (continuer)
+	{
+        	SDL_WaitEvent(&event);
+		switch(event.type)
+		{
+    			case SDL_QUIT:
+        			continuer = 0;
+        			break;
+    			case SDL_KEYDOWN:
+        			switch(event.key.keysym.sym)
+        			{
+            				case SDLK_ESCAPE:
+                continuer = 0;
+                break;
+            case SDLK_UP:
+                personnageActuel = personnage[HAUT];
+                deplacerJoueur(carte, &positionJoueur, HAUT);
+                break;
+            case SDLK_DOWN:
+                personnageActuel = personnage[BAS];
+                deplacerJoueur(carte, &positionJoueur, BAS);
+                break;
+            case SDLK_RIGHT:
+                personnageActuel = personnage[DROITE];
+                deplacerJoueur(carte, &positionJoueur, DROITE);
+                break;
+            case SDLK_LEFT:
+                personnageActuel = personnage[GAUCHE];
+                deplacerJoueur(carte, &positionJoueur, GAUCHE);
+                break;
+        }
+
+
+
+
