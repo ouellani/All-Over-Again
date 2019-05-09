@@ -1,75 +1,129 @@
 #include <stdio.h>
-#include "SDL/SDL.h"
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+#include <SDL/SDL.h>
 #include <SDL/SDL_image.h>
 #include <SDL/SDL_mixer.h>
-#include<SDL/SDL_ttf.h>
-#include"fonction.h"
-int main() {
+#include "fonctions.h"
+#include"ai.h"
 
-
-SDL_Surface *screen=NULL,*player1,*player2,*background1,*background2;
-SDL_Rect posback1,posback2,posplayer1,posplayer2;
-SDL_Event event;
-  int game =1,directionSDL1,directionSDL2;
-  background1=IMG_Load("background1.png");
-  background2=IMG_Load("background2.png");
-  player1=IMG_Load("player1.png");
-  player2=IMG_Load("player2.png");
-  SDL_Init( SDL_INIT_EVERYTHING );
-  screen = SDL_SetVideoMode(700, 500, 32, SDL_HWSURFACE | SDL_DOUBLEBUF);
-initposition(&posback1,&posback2,&posplayer1,&posplayer2);
-//initimage(background1,background2 ,player1,player2);
-SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY,SDL_DEFAULT_REPEAT_INTERVAL);
-
-while (game)
+int main(int argc, char const *argv[])
 {
-  //input from SDL
-  while(SDL_PollEvent(&event)){
-        switch (event.type)
-        {
-        // exit if the window is closed
-        case SDL_QUIT:
-            game = 0;
-            break;
-        case SDL_KEYDOWN:
-        {
-
-            if (event.key.keysym.sym == SDLK_w)//perso 1
-              directionSDL1 = 1;
-
-            if (event.key.keysym.sym == SDLK_e)//perso 1
-              directionSDL1 = 2;
-          if (event.key.keysym.sym == SDLK_o)//perso 2
-          directionSDL2 = 1;
-          if (event.key.keysym.sym == SDLK_p)//perso 2
-          directionSDL2 = 2;
-        }break;
-        break;
-        case SDL_KEYUP:
-          directionSDL1=0;
-          directionSDL2=0;
-        break;
-
-      }}
-movementplayer(&directionSDL1,&directionSDL2,&posplayer1,&posplayer2);
+  
+  Uint32 start ;
+  const int FPS= 60;
 
 
-SDL_BlitSurface(background1,NULL,screen,&posback1);
-SDL_BlitSurface(background2,NULL,screen,&posback2);
-SDL_BlitSurface(player1,NULL,screen,&posplayer1);
-SDL_BlitSurface(player2,NULL,screen,&posplayer2);
-SDL_Flip(screen);
+  Acteurs acteurs;
+  Boutons boutons;
+  Hero hero ;
+  Enemy enemy ;
+  
+
+   //initialisations
+    if( SDL_Init( SDL_INIT_EVERYTHING ) == -1 )
+    {
+        return 1;
+    }
+
+ SDL_ShowCursor(SDL_DISABLE);
+  
+/* appel des fonctions */
+
+acteurs.screen= SDL_SetVideoMode(800,600,32,SDL_HWSURFACE | SDL_DOUBLEBUF);
+SDL_WM_SetCaption( "THE MYSTERIOUS ISLAND", NULL );
+
+    initializeHero(&hero);
+    initializeEnemy(&enemy);
+    initialisation(&acteurs);
+    update_points_de_collision(&hero);
+
+
+    drawHero(hero, &acteurs);
+    drawEnemy(enemy , &acteurs);
+    draw_life_bar(&hero  , &acteurs);
+
+
+
+int carryon = 1;
+while(carryon)
+{		
+
+
+	    start=SDL_GetTicks();
+				
+
+	    if (hero.vies == 0)
+	    {
+
+	    carryon=0 ;
+
+	    }
+
+		intelligence_artificielle(&enemy,acteurs ,&hero);
+
+		SDL_PollEvent(&acteurs.event);
+
+		animationhero(&hero, acteurs);
+		updatePlayer(&hero , &acteurs) ;
+
+		centerScrollingOnPlayer(&hero, &acteurs);
+
+
+		drawHero(hero , &acteurs) ;
+
+		drawEnemy(enemy , &acteurs) ;
+
+		drawEnemy2(enemy , &acteurs) ;
+
+		drawEnemy3(enemy , &acteurs) ;
+
+		drawEnemy4( enemy ,  &acteurs) ;
+
+				drawEnemy5( enemy ,  &acteurs) ;
+
+enemy=gestion_ai(hero,enemy);
+affichageattack(&enemy,acteurs.screen);
+//printf("BUG \n");
+        draw_life_bar(&hero  , &acteurs);
+
+		SDL_Flip(acteurs.screen);
+
+//printf("camera=%d \n",acteurs.camera.x);
+
+
+	switch(acteurs.event.type)
+	{
+		case SDL_QUIT:
+             carryon = 0;
+    	case SDL_KEYDOWN:
+			if(acteurs.event.key.keysym.sym == SDLK_ESCAPE)
+				{
+					carryon= 0;
+				}
+			break;
+
+	}
+
+if ( 1000/FPS > SDL_GetTicks()-start )
+		{
+			SDL_Delay( 1000/FPS - (SDL_GetTicks()-start)) ;
+		}
+
+}
+
+
+
+
+    //LIB
+	SDL_Quit();
+	return 0 ;
+
 }
 
 
 
 
 
-SDL_FreeSurface(background1);
-SDL_FreeSurface(background2);
-SDL_FreeSurface(player1);
-SDL_FreeSurface(player2);
-
-
-}
 
